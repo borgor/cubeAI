@@ -1,0 +1,6 @@
+[submodule "Dataset_generation/MagicCube"]
+	path = Dataset_generation/MagicCube
+	url = https://github.com/davidwhogg/MagicCube.git
+[submodule "Dataset_generation/RubiksCube_TwophaseSolver"]
+	path = Dataset_generation/RubiksCube_TwophaseSolver
+	url = https://github.com/hkociemba/RubiksCube-TwophaseSolver.git
