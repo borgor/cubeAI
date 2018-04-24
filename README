@@ -1,0 +1,11 @@
+CMPS 140 project, CubeAI
+Boris Gorshenev
+Troy Fine
+
+Usage:
+	'./setup.sh' or 'bash setup.sh' will automatically fetch the projects we depend on.
+	It will also modify some minor compatibility problems, and force the solver to generate its tables (this takes approximately half an hour, so make sure you have time).
+
+	compatibility.py is a module for converting the solver's format into that of the renderer.
+
+	dataset,ipynb is a jupyter notebook demonstrating the compatibility functions
