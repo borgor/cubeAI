@@ -60,16 +60,26 @@ def renderCubie(cb):
 def solveCubie(cb, animate = False):
     rc = renderer.Cube(3)
     rc.stickers = cubie_to_stickers(cb)
-    img = rc.render()
+    if animate: img = rc.render()
     cs = cb.to_facelet_cube().__str__()
     try:
         sol = sv.solve(cs)
     except IndexError:
         pass
-    print(sol)
     if animate:
         for i in range(0,len(sol)-5,3):
             rc.move(sol[i],0,int(sol[i+1]))
             rc.render()
     return sol[:-5]
 
+def makeData(count):
+    data = np.empty((count,55) , dtype=np.str_)
+    labels = np.empty(count, dtype=np.int_)
+    for i in range(count):
+        cb = cubie.CubieCube()
+        cb.randomize()
+        sol = solveCubie(cb)
+        j = 0
+        for char in cb.to_facelet_cube().to_string(): data[i][j] = char; j+=1
+        labels[i] = hash(sol[0:2])
+    return data,labels
