@@ -4,6 +4,7 @@ from RubiksCube_TwophaseSolver.enums import Color
 from MagicCube.code import cube as renderer
 
 import numpy as np
+import itertools
 
 #To make things awful, the render and solver disagree on cube orientation.
 #This dictionary translates Solver Faces to Renderer Faces
@@ -12,15 +13,16 @@ import numpy as np
 #facedict = {"U":0, "D":1, "F":2, "B":3, "R":4, "L":5}
 
 #Therefore, this combines the two into a single table
-fd = {Color.D:0, Color.U:1, Color.L:2, Color.R:3, Color.B:4, Color.F:5}
+fd = {Color.D:0, Color.U:1, Color.L:2, Color.R:3, Color.B:4, Color.F:5,
+      "D":0, "U":1, "L":2, "R":3, "B":4,"F":5}
 
 def cubie_to_stickers(solvercube):
     #translate the solver's representation to an array of stickers for the renderer
     fc = solvercube.to_facelet_cube()
-    s = []
+    s = np.empty(54,dtype = np.int_)
     for i in range(54):
         #Substitutes colors, so that the Solver's orientation is preserved (i.e. solver-up is rendered as up)
-        s.append(fd[fc.f[i]])
+        s[i] = fd[fc.f[i]]
         
 #        if fc.f[i] == Color.U:
 #            s.append(1)
@@ -46,10 +48,37 @@ def cubie_to_stickers(solvercube):
         ])
     return a
 
+def stickersToCubieOrder(rendererCube):
+    reverse = np.array(
+        [[[ 6,  3,  0],
+        [ 7,  4,  1],
+        [ 8,  5,  2]],
 
+       [[33, 30, 27],
+        [34, 31, 28],
+        [35, 32, 29]],
 
+       [[24, 21, 18],
+        [25, 22, 19],
+        [26, 23, 20]],
 
+       [[51, 48, 45],
+        [52, 49, 46],
+        [53, 50, 47]],
 
+       [[15, 12,  9],
+        [16, 13, 10],
+        [17, 14, 11]],
+
+       [[42, 39, 36],
+        [43, 40, 37],
+        [44, 41, 38]]])
+
+    result = np.empty(54, dtype=np.int_)
+    for i,j,k in itertools.product(range(6),range(3),range(3)):
+        result[reverse[i][j][k]] = rendererCube.stickers[i][j][k]
+    return result
+        
 def renderCubie(cb):
     rc = renderer.Cube(3)
     rc.stickers = cubie_to_stickers(cb)
@@ -73,13 +102,19 @@ def solveCubie(cb, animate = False):
     return sol[:-5]
 
 def makeData(count):
-    data = np.empty((count,55) , dtype=np.str_)
+    data = np.empty((count,54) , dtype=np.int_)
     labels = np.empty(count, dtype=np.int_)
+    sol = ""
+    cb = cubie.CubieCube()
+    rc = renderer.Cube(3)
     for i in range(count):
-        cb = cubie.CubieCube()
-        cb.randomize()
-        sol = solveCubie(cb)
-        j = 0
-        for char in cb.to_facelet_cube().to_string(): data[i][j] = char; j+=1
-        labels[i] = hash(sol[0:2])
+        if not sol:
+            cb.randomize()
+            sol = solveCubie(cb)
+            rc.stickers = cubie_to_stickers(cb)
+            
+        data[i] = stickersToCubieOrder(rc)
+        labels[i] = fd[sol[0]] *10 + int(sol[1])
+        rc.move(sol[0],0,int(sol[1]))
+        sol = sol[3:]
     return data,labels
