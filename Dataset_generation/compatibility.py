@@ -109,12 +109,15 @@ def makeData(count):
     rc = renderer.Cube(3)
     for i in range(count):
         if not sol:
+            print("Initializing new cube")
             cb.randomize()
             sol = solveCubie(cb)
             rc.stickers = cubie_to_stickers(cb)
             
         data[i] = stickersToCubieOrder(rc)
-        labels[i] = fd[sol[0]] *10 + int(sol[1])
+        labels[i] = fd[sol[0]] *3 + int(sol[1])-1
         rc.move(sol[0],0,int(sol[1]))
         sol = sol[3:]
+        if (not i%100):
+            print("Iterations complete: " + str(i))
     return data,labels
