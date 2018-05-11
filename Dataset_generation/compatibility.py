@@ -15,6 +15,7 @@ import itertools
 #Therefore, this combines the two into a single table
 fd = {Color.D:0, Color.U:1, Color.L:2, Color.R:3, Color.B:4, Color.F:5,
       "D":0, "U":1, "L":2, "R":3, "B":4,"F":5}
+ifd = {0:"D", 1:"U", 2:"L", 3:"R", 4:"B", 5:"F"}
 
 def cubie_to_stickers(solvercube):
     #translate the solver's representation to an array of stickers for the renderer
@@ -121,3 +122,27 @@ def makeData(count):
         if (not i%100):
             print("Iterations complete: " + str(i))
     return data,labels
+
+def is_solved(renderercube):
+    for face in renderercube.stickers:
+        if not len(np.unique(face)) == 1:
+            return False
+    return True
+
+def testAiSolver(model, maxmoves = 60):
+    cb = cubie.CubieCube()
+    cb.randomize()
+    c = renderer.Cube(3)
+    c.stickers = cubie_to_stickers(cb)
+    states = np.empty((maxmoves,54) , dtype=np.int_)
+    for i in range(maxmoves):
+        states[i] = stickersToCubieOrder(c)
+        print(states[i])
+        move = model.predict_classes(states[i:i+1])
+        movef = ifd[int(move/3)]
+        movet = int((move%3)+1)
+        print(movef,movet)
+        c.move(movef,0,movet)
+        if is_solved(c):
+            print("solved")
+            break
