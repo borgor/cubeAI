@@ -5,6 +5,7 @@ from MagicCube.code import cube as renderer
 
 import numpy as np
 import itertools
+import sys
 
 #To make things awful, the render and solver disagree on cube orientation.
 #This dictionary translates Solver Faces to Renderer Faces
@@ -110,7 +111,6 @@ def makeData(count):
     rc = renderer.Cube(3)
     for i in range(count):
         if not sol:
-            print("Initializing new cube")
             cb.randomize()
             sol = solveCubie(cb)
             rc.stickers = cubie_to_stickers(cb)
@@ -120,7 +120,7 @@ def makeData(count):
         rc.move(sol[0],0,int(sol[1]))
         sol = sol[3:]
         if (not i%100):
-            print("Iterations complete: " + str(i))
+            sys.stdout.write("Iterations complete: " + str(i) + "\r")
     return data,labels
 
 def is_solved(renderercube):
