@@ -38,7 +38,9 @@ def cubie_to_stickers(solvercube):
 #            s.append(2)
 #        elif fc.f[i] == Color.B:
 #            s.append(4)
+    return cubie_order_to_stickers_order(s)
 
+def cubie_order_to_stickers_order(s):
     a = np.array([
         #SolverName to RendererName
         np.rot90([s[0:3],s[3:6],s[6:9]],-1), #U
@@ -141,8 +143,42 @@ def testAiSolver(model, maxmoves = 60):
         move = model.predict_classes(states[i:i+1])
         movef = ifd[int(move/3)]
         movet = int((move%3)+1)
+        ##Verify move correctness and try cycle detection
         print(movef,movet)
         c.move(movef,0,movet)
         if is_solved(c):
             print("solved")
             break
+            
+
+def nn_to_DFS_acyclic(model, maxdepth = 60, state = np.array(0), already_explored = set()):
+    if state.size == 1:
+        cb = cubie.CubieCube()
+        cb.randomize()
+        testcube = renderer.Cube(3)
+        testcube.stickers = cubie_to_stickers(cb)
+        state = testcube.stickers.copy()
+    else:
+        testcube = renderer.Cube(3)
+        testcube.stickers = state
+    if state.tobytes() in already_explored:
+        print("Cycle, returning")
+        return
+    elif is_solved(testcube):
+        print("Solved")
+        raise Exception
+        return
+    elif maxdepth <= 0:
+        print("Max depth reach")
+        return
+    already_explored.add(state.tobytes())
+    predictions = model.predict(state.reshape(1,54))
+    testcube = renderer.Cube(3)
+    moves = list(zip(list(range(18)),predictions.reshape(18).tolist()))
+    moves.sort(key = lambda e:e[1])
+    for move,p in moves:
+        testcube.stickers = state.copy()
+        movef = ifd[int(move/3)]
+        movet = int((move%3)+1)
+        testcube.move(movef,0,movet)
+        nn_to_DFS_acyclic(model, maxdepth-1, testcube.stickers, already_explored)
